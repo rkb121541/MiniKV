@@ -1,9 +1,12 @@
 #include <cstring>
+#include <iostream>
 #include <sstream>
 #include <string>
 #include <unistd.h>
 #include <unordered_map>
 #include <vector>
+#include <sys/socket.h>
+#include <arpa/inet.h>
 
 class Node {
 private:
@@ -46,6 +49,7 @@ private:
       }
       write(clientSocket, response.c_str(), response.size());
     }
+    close(clientSocket);
   }
 
   std::vector<std::string> split(const std::string &input) {
@@ -59,5 +63,48 @@ private:
   }
 
 public:
-  void start(int port);
+  void start(int port) {
+    int server_fd = socket(AF_INET, SOCK_STREAM, 0);
+    if (server_fd == -1) {
+      perror("ERROR: Socket creation failed");
+      return;
+    }
+    const int enable = 1;
+    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &enable, sizeof(int)) < 0) {
+      perror("setsockopt");
+      close(server_fd);
+      return;
+    }
+    struct sockaddr_in address;
+    address.sin_family = AF_INET;
+    address.sin_addr.s_addr = INADDR_ANY;
+    address.sin_port = htons(port);
+    if (bind(server_fd, (struct sockaddr *)&address, sizeof(address)) < 0) {
+      perror("ERROR: Bind failed");
+      close(server_fd);
+      return;
+    }
+    if (listen(server_fd, 3) < 0) {
+      perror("ERROR: Listen failed");
+      close(server_fd);
+      return;
+    }
+    std::cout << "Server listening on port " << port << " ..." << std::endl;
+    while (true) {
+      socklen_t addrlen = sizeof(address);
+      int clientSocket = accept(server_fd, (struct sockaddr *)&address, &addrlen);
+      if (clientSocket < 0) {
+        perror("ERROR: Accept failed");
+      }
+      std::cout << "Accepted new client" << std::endl;
+      handleClient(clientSocket);
+    }
+    close(server_fd);
+  }
 };
+
+int main (int argc, char *argv[]) {
+  Node node;
+  node.start(8080);
+  return 0;
+}
