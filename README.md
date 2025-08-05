@@ -40,9 +40,11 @@ The server responds with:
 
 * `ERROR: Invalid command/ incorrect number of arguments` for improper commands
 
-**TODO:**
+I implemented 2 versions (one using processes -> `/processes/`, one using threads-> `/threads/`)
 
-* Add functionality for multiple clients simultaneously
+**TODO:**
+Difference between processes and threads:
+    * Processes do not share memory, while threads do. So in my implementation with threads, one client is able to access elements that another client has stored 
 
 * Save data to a database
 
