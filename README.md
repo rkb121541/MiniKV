@@ -4,9 +4,9 @@ A mini key-value storage system
 
 * Currently, my program listens to TCP connections on a specified port (8080)
 
-* It accepts one client connection at a time
-    * So, it waits until a client connects and then prints "Accepted new client" on the server side
-    * The rest of the clients that want to join have to wait and they get put in a queue; I specified there to be a maximum of 3 clients in the queue but it seems to support up to 4 (so 1 active client and 4 clients in the queue); I have to look into why that is the case
+<!-- * It accepts one client connection at a time -->
+<!--     * So, it waits until a client connects and then prints "Accepted new client" on the server side -->
+<!--     * The rest of the clients that want to join have to wait and they get put in a queue; I specified there to be a maximum of 3 clients in the queue but it seems to support up to 4 (so 1 active client and 4 clients in the queue); I have to look into why that is the case -->
 
 The server is activated by running:
 ```bash
@@ -22,7 +22,7 @@ We connect via the client by running in a new terminal:
 telnet localhost 8080
 ```
 
-The client is able to do these commands:
+The client is able to run these commands:
 
 1. `PUT key value` to store the key with the given value
 
