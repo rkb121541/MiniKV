@@ -1,5 +1,7 @@
 #include <cstring>
 #include <iostream>
+#include <mutex>
+#include <shared_mutex>
 #include <sstream>
 #include <string>
 #include <unistd.h>
@@ -18,6 +20,7 @@
 class Node {
 private:
   std::unordered_map<std::string, std::string> mappings;
+  std::shared_mutex Mutex;
 
   void handleClient(int clientSocket) {
     std::string greeting =
@@ -51,9 +54,11 @@ private:
       }
       std::string response;
       if (tokens[0] == "PUT" && tokens.size() == 3) {
+        std::unique_lock<std::shared_mutex> lock(Mutex);
         mappings[tokens[1]] = tokens[2];
         response = std::string(GREEN) + "OK\n" + RESET;
       } else if (tokens[0] == "GET" && tokens.size() == 2) {
+        std::shared_lock<std::shared_mutex> lock(Mutex);
         auto it = mappings.find(tokens[1]);
         if (it != mappings.end()) {
           response = std::string(GREEN) + it->second + "\n" + RESET;
@@ -61,6 +66,7 @@ private:
           response = std::string(RED) + "NOT FOUND\n" + RESET;
         }
       } else if (tokens[0] == "DELETE" && tokens.size() == 2) {
+        std::unique_lock<std::shared_mutex> lock(Mutex);
         auto it = mappings.find(tokens[1]);
         if (it != mappings.end()) {
           mappings.erase(it);

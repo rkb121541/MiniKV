@@ -42,13 +42,13 @@ The server responds with:
 
 I implemented 2 versions (one using processes -> `/processes/`, one using threads-> `/threads/`)
 
-**TODO:**
 Difference between processes and threads:
     * Processes do not share memory, while threads do. So in my implementation with threads, one client is able to access elements that another client has stored 
 
-* Save data to a database
+So, in my `threads` implementation, I used an `std::shared_mutex` for read/ write access to the `std::unordered_map` so that different threads don't access that data structure simultaenously
 
-* Implement authentication/ encryption
+I use a shared mutex instead of a regular one because I want readers to all be able to share access to the map. Only writers will block access to the map.
 
-* Improve UI
+TODO:
 
+* Enable quit command
