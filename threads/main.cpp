@@ -29,7 +29,8 @@ private:
       "Commands:\n"
       "  PUT <key> <value>   - Store a value\n"
       "  GET <key>           - Retrieve a value\n"
-      "  DELETE <key>        - Remove a key-value pair\n" +
+      "  DELETE <key>        - Remove a key-value pair\n"
+      "  QUIT                - Quit the program (as client)\n" +
       std::string(RESET);
     write(clientSocket, greeting.c_str(), greeting.size());
     char buffer[1024];
@@ -43,9 +44,7 @@ private:
         break;
       }
       if (bytesReceived < 0) {
-        std::cerr << RED;
-        perror("ERROR: Read failed\n");
-        std::cerr << RESET;
+        std::cerr << RED << "ERROR: Read failed" << RESET << std::endl;
         break;
       }
       std::vector<std::string> tokens = split(buffer);
@@ -53,7 +52,12 @@ private:
         continue;
       }
       std::string response;
-      if (tokens[0] == "PUT" && tokens.size() == 3) {
+      if (tokens[0] == "QUIT" && tokens.size() == 1) {
+        std::string goodbye = std::string(YELLOW) + "Goodbye!\n" + RESET;
+        write(clientSocket, goodbye.c_str(), goodbye.size());
+        std::cout << YELLOW << "Client has requested to quit" << RESET << std::endl;
+        break;
+      } else if (tokens[0] == "PUT" && tokens.size() == 3) {
         std::unique_lock<std::shared_mutex> lock(Mutex);
         mappings[tokens[1]] = tokens[2];
         response = std::string(GREEN) + "OK\n" + RESET;
@@ -96,16 +100,12 @@ public:
   void start(int port) {
     int server_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (server_fd == -1) {
-      std::cerr << RED;
-      perror("ERROR: Socket creation failed");
-      std::cerr << RESET;
+      std::cerr << RED << "ERROR: Socket creation failed" << RESET << std::endl;
       return;
     }
     const int enable = 1;
     if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &enable, sizeof(int)) < 0) {
-      std::cerr << RED;
-      perror("setsockopt");
-      std::cerr << RESET;
+      std::cerr << RED << "ERROR: setsockopt" << RESET << std::endl;
       close(server_fd);
       return;
     }
@@ -114,16 +114,12 @@ public:
     address.sin_addr.s_addr = INADDR_ANY;
     address.sin_port = htons(port);
     if (bind(server_fd, (struct sockaddr *)&address, sizeof(address)) < 0) {
-      std::cerr << RED;
-      perror("ERROR: Bind failed");
-      std::cerr << RESET;
+      std::cerr << RED << "ERROR: Bind failed" << RESET << std::endl;
       close(server_fd);
       return;
     }
     if (listen(server_fd, 3) < 0) {
-      std::cerr << RED;
-      perror("ERROR: Listen failed");
-      std::cerr << RESET;
+      std::cerr << RED << "ERROR: Listen failed" << RESET << std::endl;
       close(server_fd);
       return;
     }
@@ -132,9 +128,7 @@ public:
       socklen_t addrlen = sizeof(address);
       int clientSocket = accept(server_fd, (struct sockaddr *)&address, &addrlen);
       if (clientSocket < 0) {
-        std::cerr << RED;
-        perror("ERROR: Accept failed");
-        std::cerr << RESET;
+        std::cerr << RED << "ERROR: Accept failed" << RESET << std::endl;
       }
       std::cout << GREEN << "Accepted new client" << RESET << std::endl;
       std::thread clientThread(&Node::handleClient, this, clientSocket);

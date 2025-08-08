@@ -30,6 +30,8 @@ The client is able to run these commands:
 
 3. `DELETE key` to delete the key-value pair
 
+4. `QUIT` to quit the program
+
 The server responds with:
 
 * `OK` for a successful `PUT`
@@ -48,7 +50,3 @@ Difference between processes and threads:
 So, in my `threads` implementation, I used an `std::shared_mutex` for read/ write access to the `std::unordered_map` so that different threads don't access that data structure simultaenously
 
 I use a shared mutex instead of a regular one because I want readers to all be able to share access to the map. Only writers will block access to the map.
-
-TODO:
-
-* Enable quit command
